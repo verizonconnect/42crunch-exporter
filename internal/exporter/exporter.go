@@ -3,20 +3,20 @@ package exporter
 import (
 	"net/http"
 
+	"github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	crunch "github.com/verizonconnect/42crunch-client-go"
-	"go.uber.org/zap"
 )
 
 const (
 	// Namespace is the metrics namespace of the exporter
-	Namespace string = "42_crunch"
+	Namespace string = "fortytwo_crunch"
 )
 
 type Exporter struct {
 	Client *crunch.Client
-	Logger *zap.Logger
+	Logger log.Logger
 }
 
 func (e *Exporter) HandlerFunc() http.HandlerFunc {

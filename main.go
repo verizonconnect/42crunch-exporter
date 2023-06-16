@@ -8,13 +8,15 @@ import (
 	"syscall"
 
 	"github.com/alecthomas/kingpin/v2"
+	"github.com/go-kit/kit/log/level"
 	"github.com/mieliespoor/42crunch-exporter/internal/exporter"
+
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/promlog"
 	"github.com/prometheus/common/version"
 	"github.com/prometheus/exporter-toolkit/web"
 	webflag "github.com/prometheus/exporter-toolkit/web/kingpinflag"
 	crunch "github.com/verizonconnect/42crunch-client-go"
-	"go.uber.org/zap"
 )
 
 const (
@@ -28,33 +30,30 @@ func init() {
 
 func main() {
 	var (
+		format        = promlog.AllowedFormat{}
 		webConfig     = webflag.AddFlags(kingpin.CommandLine, ":9916")
 		metricsPath   = kingpin.Flag("web.metrics-path", "Path under which to expose metrics").Default("/metrics").String()
 		crunchAddress = kingpin.Flag("42crunch.address", fmt.Sprintf("42Crunch server address (can also be set with $%s)", envAddress)).Default("https://platform.42crunch.com").Envar(envAddress).String()
 		crunchAPIKey  = kingpin.Flag("42crunch.api-key", fmt.Sprintf("42Crunch API key (can also be set with $%s)", envAPIKey)).Envar(envAPIKey).Required().String()
 	)
 
+	format.Set("json")
+	promlogConfig := promlog.Config{
+		Format: &format,
+	}
+
 	kingpin.Version(version.Print(exporter.Namespace + "_exporter"))
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
 
-	logger, _ := zap.NewProduction()
-	defer logger.Sync() // flushes buffer, if any
-	logger.With()
+	logger := promlog.New(&promlogConfig)
 
-	logger.Info("Starting exporter",
-		zap.String("namespace", exporter.Namespace),
-		zap.String("version", version.Info()),
-	)
-	logger.Info("Build context",
-		zap.String("context", version.BuildContext()),
-	)
+	level.Info(logger).Log("msg", fmt.Sprintf("Starting %s_exporter %s", exporter.Namespace, version.Info()))
+	level.Info(logger).Log("msg", fmt.Sprintf("Build context %s", version.BuildContext()))
 
 	client, err := crunch.NewClient(*crunchAddress, crunch.WithAPIKey(*crunchAPIKey))
 	if err != nil {
-		logger.Error("Error creating client",
-			zap.Error(err),
-		)
+		level.Error(logger).Log("msg", "Error creating client", "err", err)
 		os.Exit(1)
 	}
 
@@ -81,7 +80,7 @@ func main() {
 	go func() {
 		srv := &http.Server{}
 		if err := web.ListenAndServe(srv, webConfig, logger); err != http.ErrServerClosed {
-			logger.Error("Error starting HTTP server", zap.Error(err))
+			level.Error(logger).Log("msg", "Error starting HTTP server", "err", err)
 			close(srvc)
 		}
 	}()
@@ -89,7 +88,7 @@ func main() {
 	for {
 		select {
 		case <-term:
-			logger.Info("Received SIGTERM, exiting gracefully...")
+			level.Info(logger).Log("msg", "Received SIGTERM, exiting gracefully...")
 			os.Exit(0)
 		case <-srvc:
 			os.Exit(1)
