@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
@@ -32,7 +33,7 @@ func (e *Exporter) HandlerFunc() http.HandlerFunc {
 			return
 		}
 
-		if err := e.collectApiMetrics(r.Context(), registry); err != nil {
+		if err := e.collectApiAuditMetrics(r.Context(), registry); err != nil {
 			level.Error(e.Logger).Log("err", err)
 			http.Error(w, fmt.Sprintf("error: %s", err), http.StatusInternalServerError)
 			return
@@ -79,7 +80,7 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 	return nil
 }
 
-func (e *Exporter) collectApiMetrics(ctx context.Context, registry *prometheus.Registry) error {
+func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometheus.Registry) error {
 	collections, err := e.Client.Collections.GetAll(ctx)
 	if err != nil {
 		level.Error(e.Logger).Log("msg", "api collections could not be retrieved", "err", err)
@@ -90,7 +91,7 @@ func (e *Exporter) collectApiMetrics(ctx context.Context, registry *prometheus.R
 		apiInformation = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: prometheus.BuildFQName(Namespace, "api", "information"),
-				Help: "Basic information about the api collection",
+				Help: "Basic information about an API",
 			},
 			[]string{
 				"id",
@@ -102,13 +103,63 @@ func (e *Exporter) collectApiMetrics(ctx context.Context, registry *prometheus.R
 		apiAssessmentCriticals = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: prometheus.BuildFQName(Namespace, "api", "assessment_criticals"),
+				Help: "The number of critical vulnerabilities per api based on the API Audit",
+			},
+			[]string{"id"},
+		)
+		apiAssessmentHighs = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: prometheus.BuildFQName(Namespace, "api", "assessment_highs"),
+				Help: "The number of high vulnerabilities per api based on the API Audit",
+			},
+			[]string{"id"},
+		)
+		apiAssessmentMediums = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: prometheus.BuildFQName(Namespace, "api", "assessment_mediums"),
+				Help: "The number of medium vulnerabilities per api based on the API Audit",
+			},
+			[]string{"id"},
+		)
+		apiAssessmentLows = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: prometheus.BuildFQName(Namespace, "api", "assessment_lows"),
+				Help: "The number of low vulnerabilities per api based on the API Audit",
+			},
+			[]string{"id"},
+		)
+		apiAssessmentInfos = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: prometheus.BuildFQName(Namespace, "api", "assessment_infos"),
+				Help: "The number of information messages per api based on the API Audit",
 			},
 			[]string{"id"},
 		)
 		apiAssessmentGrade = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: prometheus.BuildFQName(Namespace, "api", "assessment_grade"),
-				Help: "API Audit Assessment Grade for the api",
+				Help: "API Audit Assessment Grade",
+			},
+			[]string{"id"},
+		)
+		apiAssessmentErrors = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: prometheus.BuildFQName(Namespace, "api", "assessment_errors"),
+				Help: "The number of API errors",
+			},
+			[]string{"id"},
+		)
+		apiAssessmentValid = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: prometheus.BuildFQName(Namespace, "api", "assessment_valid"),
+				Help: "Indicating whether the api schema is valid",
+			},
+			[]string{"id"},
+		)
+		apiAssessmentLastAudit = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: prometheus.BuildFQName(Namespace, "api", "assessment_last_audit"),
+				Help: "Last API Audit Assessment date, represented as a Unix timestamp",
 			},
 			[]string{"id"},
 		)
@@ -117,7 +168,14 @@ func (e *Exporter) collectApiMetrics(ctx context.Context, registry *prometheus.R
 	registry.MustRegister(
 		apiInformation,
 		apiAssessmentCriticals,
+		apiAssessmentHighs,
+		apiAssessmentMediums,
+		apiAssessmentLows,
+		apiAssessmentInfos,
 		apiAssessmentGrade,
+		apiAssessmentErrors,
+		apiAssessmentValid,
+		apiAssessmentLastAudit,
 	)
 
 	for _, c := range collections.Items {
@@ -145,10 +203,55 @@ func (e *Exporter) collectApiMetrics(ctx context.Context, registry *prometheus.R
 					"id": api.Description.Id,
 				}).Set(float64(api.Assessment.NumCriticals))
 
+			apiAssessmentHighs.With(
+				prometheus.Labels{
+					"id": api.Description.Id,
+				}).Set(float64(api.Assessment.NumHighs))
+
+			apiAssessmentMediums.With(
+				prometheus.Labels{
+					"id": api.Description.Id,
+				}).Set(float64(api.Assessment.NumMediums))
+
+			apiAssessmentLows.With(
+				prometheus.Labels{
+					"id": api.Description.Id,
+				}).Set(float64(api.Assessment.NumLows))
+
+			apiAssessmentInfos.With(
+				prometheus.Labels{
+					"id": api.Description.Id,
+				}).Set(float64(api.Assessment.NumInfos))
+
+			apiAssessmentErrors.With(
+				prometheus.Labels{
+					"id": api.Description.Id,
+				}).Set(float64(api.Assessment.NumErrors))
+
 			apiAssessmentGrade.With(
 				prometheus.Labels{
 					"id": api.Description.Id,
 				}).Set(float64(api.Assessment.Grade))
+
+			valid := 0
+			if api.Assessment.IsValid {
+				valid = 1
+			}
+			apiAssessmentValid.With(
+				prometheus.Labels{
+					"id": api.Description.Id,
+				}).Set(float64(valid))
+
+			unix := int64(0)
+			if len(api.Assessment.Last) > 0 {
+				last, _ := time.Parse(time.RFC3339, api.Assessment.Last)
+				unix = last.Unix()
+			}
+
+			apiAssessmentLastAudit.With(
+				prometheus.Labels{
+					"id": api.Description.Id,
+				}).Set(float64(unix))
 		}
 	}
 
