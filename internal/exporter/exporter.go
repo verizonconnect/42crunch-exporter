@@ -80,13 +80,15 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 		obj, err := regexp.Match(*e.Config.CollectionInclRegex, []byte(c.Description.Name))
 		if err != nil {
 			_ = level.Error(e.Logger).Log("msg", "regex failed", "err", err)
-		} else if obj {
+		}
+
+		if obj {
 			collectionInformation.With(prometheus.Labels{
 				"id":   c.Description.Id,
 				"name": c.Description.Name,
 			}).Set(float64(c.Summary.ApiCount))
 		} else {
-			_ = level.Debug(e.Logger).Log("msg", fmt.Sprintf("regex did not match for %s", c.Description.Name))
+			_ = level.Debug(e.Logger).Log("msg", fmt.Sprintf("regex did not match for %s", c.Description.Name), "err", err)
 		}
 	}
 
@@ -216,62 +218,35 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 				"tags":          apiTags,
 			}).Set(1)
 
-			apiAssessmentCriticals.With(
-				prometheus.Labels{
-					"id": api.Description.Id,
-				}).Set(float64(api.Assessment.NumCriticals))
-
-			apiAssessmentHighs.With(
-				prometheus.Labels{
-					"id": api.Description.Id,
-				}).Set(float64(api.Assessment.NumHighs))
-
-			apiAssessmentMediums.With(
-				prometheus.Labels{
-					"id": api.Description.Id,
-				}).Set(float64(api.Assessment.NumMediums))
-
-			apiAssessmentLows.With(
-				prometheus.Labels{
-					"id": api.Description.Id,
-				}).Set(float64(api.Assessment.NumLows))
-
-			apiAssessmentInfos.With(
-				prometheus.Labels{
-					"id": api.Description.Id,
-				}).Set(float64(api.Assessment.NumInfos))
-
-			apiAssessmentErrors.With(
-				prometheus.Labels{
-					"id": api.Description.Id,
-				}).Set(float64(api.Assessment.NumErrors))
-
-			apiAssessmentGrade.With(
-				prometheus.Labels{
-					"id": api.Description.Id,
-				}).Set(float64(api.Assessment.Grade))
+			setPrometheusGaugeVec(apiAssessmentCriticals, api.Description.Id, float64(api.Assessment.NumCriticals))
+			setPrometheusGaugeVec(apiAssessmentHighs, api.Description.Id, float64(api.Assessment.NumHighs))
+			setPrometheusGaugeVec(apiAssessmentMediums, api.Description.Id, float64(api.Assessment.NumMediums))
+			setPrometheusGaugeVec(apiAssessmentLows, api.Description.Id, float64(api.Assessment.NumLows))
+			setPrometheusGaugeVec(apiAssessmentInfos, api.Description.Id, float64(api.Assessment.NumInfos))
+			setPrometheusGaugeVec(apiAssessmentErrors, api.Description.Id, float64(api.Assessment.NumErrors))
+			setPrometheusGaugeVec(apiAssessmentGrade, api.Description.Id, float64(api.Assessment.Grade))
 
 			valid := 0
 			if api.Assessment.IsValid {
 				valid = 1
 			}
-			apiAssessmentValid.With(
-				prometheus.Labels{
-					"id": api.Description.Id,
-				}).Set(float64(valid))
+			setPrometheusGaugeVec(apiAssessmentValid, api.Description.Id, float64(valid))
 
 			unix := int64(0)
 			if len(api.Assessment.Last) > 0 {
 				last, _ := time.Parse(time.RFC3339, api.Assessment.Last)
 				unix = last.Unix()
 			}
-
-			apiAssessmentLastAudit.With(
-				prometheus.Labels{
-					"id": api.Description.Id,
-				}).Set(float64(unix))
+			setPrometheusGaugeVec(apiAssessmentLastAudit, api.Description.Id, float64(unix))
 		}
 	}
 
 	return nil
+}
+
+func setPrometheusGaugeVec(gaugeVec *prometheus.GaugeVec, id string, metricValue float64) {
+	gaugeVec.With(
+		prometheus.Labels{
+			"id": id,
+		}).Set(metricValue)
 }
