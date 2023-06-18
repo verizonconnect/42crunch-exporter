@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"github.com/alecthomas/kingpin/v2"
-	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log/level"
 	"github.com/mieliespoor/42crunch-exporter/internal/exporter"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -37,10 +37,11 @@ func main() {
 		metricsPath         = kingpin.Flag("web.metrics-path", "Path under which to expose metrics").Default("/metrics").String()
 		crunchAddress       = kingpin.Flag("42c-address", fmt.Sprintf("42Crunch server address (can also be set with $%s)", envAddress)).Default("https://platform.42crunch.com").Envar(envAddress).String()
 		crunchAPIKey        = kingpin.Flag("42c-api-key", fmt.Sprintf("42Crunch API key (can also be set with $%s)", envAPIKey)).Envar(envAPIKey).Required().String()
-		collectionInclRegex = kingpin.Flag("collection-excl-regex", fmt.Sprintf("")).Envar(env42cCollectionRegex).String()
+		collectionInclRegex = kingpin.Flag("42c-collection-regex", fmt.Sprintf("Regex which will include only specific 42Crunhc API collections. (can also be set with $%s)", env42cCollectionRegex)).Envar(env42cCollectionRegex).String()
 	)
 
-	format.Set("json")
+	err := format.Set("json")
+
 	promlogConfig := promlog.Config{
 		Format: &format,
 	}
