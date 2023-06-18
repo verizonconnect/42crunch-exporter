@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/go-kit/log"
@@ -21,6 +22,11 @@ const (
 type Exporter struct {
 	Client *crunch.Client
 	Logger log.Logger
+	Config ExporterConfig
+}
+
+type ExporterConfig struct {
+	CollectionInclRegex *string
 }
 
 func (e *Exporter) HandlerFunc() http.HandlerFunc {
@@ -71,10 +77,17 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 	}
 
 	for _, c := range collections.Items {
-		collectionInformation.With(prometheus.Labels{
-			"id":   c.Description.Id,
-			"name": c.Description.Name,
-		}).Set(float64(c.Summary.ApiCount))
+		obj, err := regexp.Match(*e.Config.CollectionInclRegex, []byte(c.Description.Name))
+		if err != nil {
+			level.Error(e.Logger).Log("msg", "regex failed", "err", err)
+		} else if obj {
+			collectionInformation.With(prometheus.Labels{
+				"id":   c.Description.Id,
+				"name": c.Description.Name,
+			}).Set(float64(c.Summary.ApiCount))
+		} else {
+			level.Debug(e.Logger).Log("msg", fmt.Sprintf("regex did not match for %s", c.Description.Name))
+		}
 	}
 
 	return nil
@@ -179,6 +192,11 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 	)
 
 	for _, c := range collections.Items {
+		obj, err := regexp.Match(*e.Config.CollectionInclRegex, []byte(c.Description.Name))
+		if obj == false {
+			continue
+		}
+
 		apiResult, err := e.Client.API.ListApis(ctx, c.Description.Id)
 		if err != nil {
 			level.Error(e.Logger).Log("msg", "collection apis could not be retrieved", "err", err)
