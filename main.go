@@ -26,11 +26,9 @@ const (
 	env42cCollectionRegex string = "42C_COLLECTION_REGEX"
 )
 
-func init() {
-	prometheus.MustRegister(version.NewCollector(exporter.Namespace + "_exporter"))
-}
-
 func main() {
+	prometheus.MustRegister(version.NewCollector(exporter.Namespace + "_exporter"))
+
 	var (
 		format              = promlog.AllowedFormat{}
 		webConfig           = webflag.AddFlags(kingpin.CommandLine, ":9916")

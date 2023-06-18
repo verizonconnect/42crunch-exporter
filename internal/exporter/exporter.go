@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	// Namespace is the metrics namespace of the exporter
+	// Namespace is the metrics namespace of the exporter.
 	Namespace string = "fortytwo_crunch"
 )
 
