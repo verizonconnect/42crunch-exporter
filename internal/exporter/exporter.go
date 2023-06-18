@@ -34,13 +34,13 @@ func (e *Exporter) HandlerFunc() http.HandlerFunc {
 		registry := prometheus.NewRegistry()
 
 		if err := e.collectApiCollectionMetrics(r.Context(), registry); err != nil {
-			level.Error(e.Logger).Log("err", err)
+			_ = level.Error(e.Logger).Log("err", err)
 			http.Error(w, fmt.Sprintf("error: %s", err), http.StatusInternalServerError)
 			return
 		}
 
 		if err := e.collectApiAuditMetrics(r.Context(), registry); err != nil {
-			level.Error(e.Logger).Log("err", err)
+			_ = level.Error(e.Logger).Log("err", err)
 			http.Error(w, fmt.Sprintf("error: %s", err), http.StatusInternalServerError)
 			return
 		}
@@ -65,7 +65,7 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 		)
 	)
 
-	level.Info(e.Logger).Log("msg", "collecting collection metrics...")
+	_ = level.Info(e.Logger).Log("msg", "collecting collection metrics...")
 	registry.MustRegister(
 		collectionInformation,
 	)
