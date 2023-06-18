@@ -58,7 +58,7 @@ func main() {
 
 	client, err := crunch.NewClient(*crunchAddress, crunch.WithAPIKey(*crunchAPIKey))
 	if err != nil {
-		level.Error(logger).Log("msg", "Error creating client", "err", err)
+		_ = level.Error(logger).Log("msg", "Error creating client", "err", err)
 		os.Exit(1)
 	}
 
@@ -86,7 +86,7 @@ func main() {
 	go func() {
 		srv := &http.Server{}
 		if err := web.ListenAndServe(srv, webConfig, logger); err != http.ErrServerClosed {
-			level.Error(logger).Log("msg", "Error starting HTTP server", "err", err)
+			_ = level.Error(logger).Log("msg", "Error starting HTTP server", "err", err)
 			close(srvc)
 		}
 	}()
@@ -94,7 +94,7 @@ func main() {
 	for {
 		select {
 		case <-term:
-			level.Info(logger).Log("msg", "Received SIGTERM, exiting gracefully...")
+			_ = level.Info(logger).Log("msg", "Received SIGTERM, exiting gracefully...")
 			os.Exit(0)
 		case <-srvc:
 			os.Exit(1)
