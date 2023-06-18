@@ -40,7 +40,7 @@ func main() {
 		collectionInclRegex = kingpin.Flag("42c-collection-regex", fmt.Sprintf("Regex which will include only specific 42Crunhc API collections. (can also be set with $%s)", env42cCollectionRegex)).Envar(env42cCollectionRegex).String()
 	)
 
-	err := format.Set("json")
+	_ = format.Set("json")
 
 	promlogConfig := promlog.Config{
 		Format: &format,

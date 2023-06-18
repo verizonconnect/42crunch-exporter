@@ -192,7 +192,7 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 	)
 
 	for _, c := range collections.Items {
-		obj, err := regexp.Match(*e.Config.CollectionInclRegex, []byte(c.Description.Name))
+		obj, _ := regexp.Match(*e.Config.CollectionInclRegex, []byte(c.Description.Name))
 		if !obj {
 			continue
 		}
