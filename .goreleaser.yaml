@@ -1,0 +1,36 @@
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    id: "42crunch-exporter"
+    ldflags:
+      - -s -w -X main.build={{.Version}}
+    binary: "{{ .ProjectName }}"
+    skip: false
+changelog:
+  use: github
+  sort: asc
+  groups:
+  - title: Features
+    regexp: "^.*feat[(\\w)]*:+.*$"
+    order: 0
+  - title: Fixes
+    regexp: "^.*fix[(\\w)]*:+.*$"
+    order: 1
+  - title: Building and Packaging
+    regexp: "^.*build[(\\w)]*:+.*$"
+    order: 2
+  - title: Documentation
+    regexp: "^.*docs[(\\w)]*:+.*$"
+    order: 3
+  - title: Others
+    order: 999
+  filters:
+    exclude:
+    - '^test:'
+    - '^Merge '
