@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"github.com/alecthomas/kingpin/v2"
-	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log/level"
 	"github.com/mieliespoor/42crunch-exporter/internal/exporter"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -26,21 +26,19 @@ const (
 	env42cCollectionRegex string = "42C_COLLECTION_REGEX"
 )
 
-func init() {
-	prometheus.MustRegister(version.NewCollector(exporter.Namespace + "_exporter"))
-}
-
 func main() {
+	prometheus.MustRegister(version.NewCollector(exporter.Namespace + "_exporter"))
+
 	var (
 		format              = promlog.AllowedFormat{}
 		webConfig           = webflag.AddFlags(kingpin.CommandLine, ":9916")
 		metricsPath         = kingpin.Flag("web.metrics-path", "Path under which to expose metrics").Default("/metrics").String()
 		crunchAddress       = kingpin.Flag("42c-address", fmt.Sprintf("42Crunch server address (can also be set with $%s)", envAddress)).Default("https://platform.42crunch.com").Envar(envAddress).String()
 		crunchAPIKey        = kingpin.Flag("42c-api-key", fmt.Sprintf("42Crunch API key (can also be set with $%s)", envAPIKey)).Envar(envAPIKey).Required().String()
-		collectionInclRegex = kingpin.Flag("collection-excl-regex", fmt.Sprintf("")).Envar(env42cCollectionRegex).String()
+		collectionInclRegex = kingpin.Flag("42c-collection-regex", fmt.Sprintf("Regex which will include only specific 42Crunhc API collections. (can also be set with $%s)", env42cCollectionRegex)).Envar(env42cCollectionRegex).String()
 	)
 
-	format.Set("json")
+	_ = format.Set("json")
 	promlogConfig := promlog.Config{
 		Format: &format,
 	}
@@ -52,12 +50,12 @@ func main() {
 
 	logger := promlog.New(&promlogConfig)
 
-	level.Info(logger).Log("msg", fmt.Sprintf("Starting %s_exporter %s", exporter.Namespace, version.Info()))
-	level.Info(logger).Log("msg", fmt.Sprintf("Build context %s", version.BuildContext()))
+	_ = level.Info(logger).Log("msg", fmt.Sprintf("Starting %s_exporter %s", exporter.Namespace, version.Info()))
+	_ = level.Info(logger).Log("msg", fmt.Sprintf("Build context %s", version.BuildContext()))
 
 	client, err := crunch.NewClient(*crunchAddress, crunch.WithAPIKey(*crunchAPIKey))
 	if err != nil {
-		level.Error(logger).Log("msg", "Error creating client", "err", err)
+		_ = level.Error(logger).Log("msg", "Error creating client", "err", err)
 		os.Exit(1)
 	}
 
@@ -85,7 +83,7 @@ func main() {
 	go func() {
 		srv := &http.Server{}
 		if err := web.ListenAndServe(srv, webConfig, logger); err != http.ErrServerClosed {
-			level.Error(logger).Log("msg", "Error starting HTTP server", "err", err)
+			_ = level.Error(logger).Log("msg", "Error starting HTTP server", "err", err)
 			close(srvc)
 		}
 	}()
@@ -93,7 +91,7 @@ func main() {
 	for {
 		select {
 		case <-term:
-			level.Info(logger).Log("msg", "Received SIGTERM, exiting gracefully...")
+			_ = level.Info(logger).Log("msg", "Received SIGTERM, exiting gracefully...")
 			os.Exit(0)
 		case <-srvc:
 			os.Exit(1)
