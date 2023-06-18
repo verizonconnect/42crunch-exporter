@@ -53,8 +53,8 @@ func main() {
 
 	logger := promlog.New(&promlogConfig)
 
-	level.Info(logger).Log("msg", fmt.Sprintf("Starting %s_exporter %s", exporter.Namespace, version.Info()))
-	level.Info(logger).Log("msg", fmt.Sprintf("Build context %s", version.BuildContext()))
+	_ = level.Info(logger).Log("msg", fmt.Sprintf("Starting %s_exporter %s", exporter.Namespace, version.Info()))
+	_ = level.Info(logger).Log("msg", fmt.Sprintf("Build context %s", version.BuildContext()))
 
 	client, err := crunch.NewClient(*crunchAddress, crunch.WithAPIKey(*crunchAPIKey))
 	if err != nil {
