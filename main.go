@@ -41,7 +41,6 @@ func main() {
 	)
 
 	_ = format.Set("json")
-
 	promlogConfig := promlog.Config{
 		Format: &format,
 	}

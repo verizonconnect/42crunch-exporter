@@ -72,21 +72,21 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 
 	collections, err := e.Client.Collections.GetAll(ctx)
 	if err != nil {
-		level.Error(e.Logger).Log("msg", "api collection metrics collection failed...", "err", err)
+		_ = level.Error(e.Logger).Log("msg", "api collection metrics collection failed...", "err", err)
 		return err
 	}
 
 	for _, c := range collections.Items {
 		obj, err := regexp.Match(*e.Config.CollectionInclRegex, []byte(c.Description.Name))
 		if err != nil {
-			level.Error(e.Logger).Log("msg", "regex failed", "err", err)
+			_ = level.Error(e.Logger).Log("msg", "regex failed", "err", err)
 		} else if obj {
 			collectionInformation.With(prometheus.Labels{
 				"id":   c.Description.Id,
 				"name": c.Description.Name,
 			}).Set(float64(c.Summary.ApiCount))
 		} else {
-			level.Debug(e.Logger).Log("msg", fmt.Sprintf("regex did not match for %s", c.Description.Name))
+			_ = level.Debug(e.Logger).Log("msg", fmt.Sprintf("regex did not match for %s", c.Description.Name))
 		}
 	}
 
@@ -96,7 +96,7 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometheus.Registry) error {
 	collections, err := e.Client.Collections.GetAll(ctx)
 	if err != nil {
-		level.Error(e.Logger).Log("msg", "api collections could not be retrieved", "err", err)
+		_ = level.Error(e.Logger).Log("msg", "api collections could not be retrieved", "err", err)
 		return err
 	}
 
@@ -199,7 +199,7 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 
 		apiResult, err := e.Client.API.ListApis(ctx, c.Description.Id)
 		if err != nil {
-			level.Error(e.Logger).Log("msg", "collection apis could not be retrieved", "err", err)
+			_ = level.Error(e.Logger).Log("msg", "collection apis could not be retrieved", "err", err)
 			return err
 		}
 
