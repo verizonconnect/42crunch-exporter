@@ -13,6 +13,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/promlog"
+	"github.com/prometheus/common/promlog/flag"
 	"github.com/prometheus/common/version"
 	"github.com/prometheus/exporter-toolkit/web"
 	webflag "github.com/prometheus/exporter-toolkit/web/kingpinflag"
@@ -20,8 +21,8 @@ import (
 )
 
 const (
-	envAddress string = "42_CRUNCH_ADDR"
-	envAPIKey  string = "42_CRUNCH_API_KEY"
+	envAddress string = "42C_ADDR"
+	envAPIKey  string = "42C_API_KEY"
 )
 
 func init() {
@@ -33,8 +34,8 @@ func main() {
 		format        = promlog.AllowedFormat{}
 		webConfig     = webflag.AddFlags(kingpin.CommandLine, ":9916")
 		metricsPath   = kingpin.Flag("web.metrics-path", "Path under which to expose metrics").Default("/metrics").String()
-		crunchAddress = kingpin.Flag("42crunch.address", fmt.Sprintf("42Crunch server address (can also be set with $%s)", envAddress)).Default("https://platform.42crunch.com").Envar(envAddress).String()
-		crunchAPIKey  = kingpin.Flag("42crunch.api-key", fmt.Sprintf("42Crunch API key (can also be set with $%s)", envAPIKey)).Envar(envAPIKey).Required().String()
+		crunchAddress = kingpin.Flag("42c-address", fmt.Sprintf("42Crunch server address (can also be set with $%s)", envAddress)).Default("https://platform.42crunch.com").Envar(envAddress).String()
+		crunchAPIKey  = kingpin.Flag("42c-api-key", fmt.Sprintf("42Crunch API key (can also be set with $%s)", envAPIKey)).Envar(envAPIKey).Required().String()
 	)
 
 	format.Set("json")
@@ -42,6 +43,7 @@ func main() {
 		Format: &format,
 	}
 
+	flag.AddFlags(kingpin.CommandLine, &promlogConfig)
 	kingpin.Version(version.Print(exporter.Namespace + "_exporter"))
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
