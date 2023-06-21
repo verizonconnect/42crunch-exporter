@@ -8,7 +8,7 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/prometheus/common v0.44.0
 	github.com/prometheus/exporter-toolkit v0.10.0
-	github.com/verizonconnect/42crunch-client-go v1.1.0
+	github.com/verizonconnect/42crunch-client-go v1.1.1
 )
 
 require (
