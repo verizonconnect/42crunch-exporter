@@ -181,14 +181,14 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 		apiAssessmentSemanticInvalid = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: prometheus.BuildFQName(Namespace, "api", "assessment_semantic_invalid"),
-				Help: "Last API Audit Assessment date, represented as a Unix timestamp",
+				Help: "Indicates whether the api has semantic issues",
 			},
 			[]string{"id"},
 		)
 		apiAssessmentStructureInvalid = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: prometheus.BuildFQName(Namespace, "api", "assessment_structure_invalid"),
-				Help: "Last API Audit Assessment date, represented as a Unix timestamp",
+				Help: "Indicates whether the api has structural issues",
 			},
 			[]string{"id"},
 		)
