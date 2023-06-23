@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/mieliespoor/42crunch-exporter/compare/v1.0.0...v1.1.0) (2023-06-23)
+
+
+### Features
+
+* get assessment report state ([efe1cd1](https://github.com/mieliespoor/42crunch-exporter/commit/efe1cd1ecc97673ebe3be5e9eb894ad623efe4d1))
+
+
+### Miscellaneous
+
+* fix lint warning ([7f0d546](https://github.com/mieliespoor/42crunch-exporter/commit/7f0d5461216a035fde70800aac1c89b240be2da6))
+* update help labels ([19a9d2e](https://github.com/mieliespoor/42crunch-exporter/commit/19a9d2e1e15905eabd4c2f3f2027f35ea4d86bc3))
+
 ## 1.0.0 (2023-06-18)
 
 
