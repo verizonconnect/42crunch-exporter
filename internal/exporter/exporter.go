@@ -262,15 +262,13 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 			setPrometheusGaugeVec(apiAssessmentLastAudit, api.Description.Id, float64(unix))
 
 			if reportState != nil {
-				select {
-				case state := <-reportState:
-					switch state {
-					case "structureInvalid":
-						setPrometheusGaugeVec(apiAssessmentStructureInvalid, api.Description.Id, float64(1))
-					case "semanticInvalid":
-						setPrometheusGaugeVec(apiAssessmentSemanticInvalid, api.Description.Id, float64(1))
-					default:
-					}
+				state := <-reportState
+				switch state {
+				case "structureInvalid":
+					setPrometheusGaugeVec(apiAssessmentStructureInvalid, api.Description.Id, float64(1))
+				case "semanticInvalid":
+					setPrometheusGaugeVec(apiAssessmentSemanticInvalid, api.Description.Id, float64(1))
+				default:
 				}
 			}
 		}
