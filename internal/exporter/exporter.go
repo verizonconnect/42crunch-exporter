@@ -178,6 +178,20 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 			},
 			[]string{"id"},
 		)
+		apiAssessmentSemanticInvalid = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: prometheus.BuildFQName(Namespace, "api", "assessment_semantic_invalid"),
+				Help: "Indicates whether the api has semantic issues",
+			},
+			[]string{"id"},
+		)
+		apiAssessmentStructureInvalid = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: prometheus.BuildFQName(Namespace, "api", "assessment_structure_invalid"),
+				Help: "Indicates whether the api has structural issues",
+			},
+			[]string{"id"},
+		)
 	)
 
 	registry.MustRegister(
@@ -191,6 +205,8 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 		apiAssessmentErrors,
 		apiAssessmentValid,
 		apiAssessmentLastAudit,
+		apiAssessmentSemanticInvalid,
+		apiAssessmentStructureInvalid,
 	)
 
 	for _, c := range collections.Items {
@@ -209,6 +225,12 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 			apiTags := ","
 			for _, t := range api.Tags {
 				apiTags = apiTags + t.TagName + ","
+			}
+
+			var reportState chan string
+			if !api.Assessment.IsValid {
+				// this is a very expensive call, so we would prefarrably not want to execute it.
+				reportState = e.getApiAssessmentReport(ctx, api.Description.Id)
 			}
 
 			apiInformation.With(prometheus.Labels{
@@ -238,6 +260,17 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 				unix = last.Unix()
 			}
 			setPrometheusGaugeVec(apiAssessmentLastAudit, api.Description.Id, float64(unix))
+
+			if reportState != nil {
+				state := <-reportState
+				switch state {
+				case "structureInvalid":
+					setPrometheusGaugeVec(apiAssessmentStructureInvalid, api.Description.Id, float64(1))
+				case "semanticInvalid":
+					setPrometheusGaugeVec(apiAssessmentSemanticInvalid, api.Description.Id, float64(1))
+				default:
+				}
+			}
 		}
 	}
 
@@ -249,4 +282,18 @@ func setPrometheusGaugeVec(gaugeVec *prometheus.GaugeVec, id string, metricValue
 		prometheus.Labels{
 			"id": id,
 		}).Set(metricValue)
+}
+
+func (e *Exporter) getApiAssessmentReport(ctx context.Context, apiId string) chan string {
+	r := make(chan string)
+	go func() {
+		report, err := e.Client.API.ReadAssessmentReport(ctx, apiId)
+		if err != nil {
+			_ = level.Error(e.Logger).Log("msg", "unable to read assessment report", "err", err)
+		}
+
+		r <- report.OpenapiState
+	}()
+
+	return r
 }
