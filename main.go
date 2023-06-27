@@ -9,7 +9,7 @@ import (
 
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/go-kit/log/level"
-	"github.com/mieliespoor/42crunch-exporter/internal/exporter"
+	"github.com/verizonconnect/42crunch-exporter/internal/exporter"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/promlog"

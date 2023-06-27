@@ -1,4 +1,4 @@
-module github.com/mieliespoor/42crunch-exporter
+module github.com/verizonconnect/42crunch-exporter
 
 go 1.20
 
