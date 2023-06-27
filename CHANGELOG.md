@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/verizonconnect/42crunch-exporter/compare/v1.1.1...v1.1.2) (2023-06-27)
+
+
+### Miscellaneous
+
+* transfer ownership ([e2f4040](https://github.com/verizonconnect/42crunch-exporter/commit/e2f404091cf0e33696f1d12191c3ee22770b6c1c))
+
 ## [1.1.1](https://github.com/verizonconnect/42crunch-exporter/compare/v1.1.0...v1.1.1) (2023-06-26)
 
 
