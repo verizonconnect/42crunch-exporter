@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/verizonconnect/42crunch-exporter/compare/v1.1.2...v1.2.0) (2023-07-06)
+
+
+### Features
+
+* add docker image ([#7](https://github.com/verizonconnect/42crunch-exporter/issues/7)) ([72ace06](https://github.com/verizonconnect/42crunch-exporter/commit/72ace06dc7296122d37ef9aa7aac5f32f0ab124e))
+
 ## [1.1.2](https://github.com/verizonconnect/42crunch-exporter/compare/v1.1.1...v1.1.2) (2023-06-27)
 
 
