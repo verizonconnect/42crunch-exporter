@@ -12,6 +12,36 @@ builds:
       - -s -w -X main.build={{.Version}}
     binary: "{{ .ProjectName }}"
     skip: false
+dockers:
+  - image_templates:
+      - "vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64"
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=MIT
+  - image_templates:
+      - "vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8"
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - --platform=linux/arm64/v8
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=MIT
+docker_manifests:
+- name_template: vzconnect/{{ .ProjectName }}:{{ .Version }}
+  image_templates:
+  - vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
+  - vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8
+- name_template: vzconnect/{{ .ProjectName }}:latest
+  image_templates:
+  - vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
+  - vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8
 changelog:
   use: github
   sort: asc
