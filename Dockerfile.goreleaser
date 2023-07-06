@@ -1,0 +1,5 @@
+FROM --platform=$BUILDPLATFORM alpine:3.18
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+COPY 42crunch-exporter /opt/42crunch-exporter
