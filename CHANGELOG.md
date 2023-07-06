@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.0...v1.2.1) (2023-07-06)
+
+
+### Bug Fixes
+
+* multi-architecture builds ([fa85e46](https://github.com/verizonconnect/42crunch-exporter/commit/fa85e46d42fa7e54aaff0e2bd80cbe8956b9f047))
+
 ## [1.2.0](https://github.com/verizonconnect/42crunch-exporter/compare/v1.1.2...v1.2.0) (2023-07-06)
 
 
