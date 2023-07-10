@@ -3,3 +3,5 @@ ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
 COPY 42crunch-exporter /opt/42crunch-exporter
+
+ENTRYPOINT [ "/opt/42crunch-exporter" ]
