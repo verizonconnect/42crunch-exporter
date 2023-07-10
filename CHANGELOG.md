@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.1...v1.2.2) (2023-07-10)
+
+
+### Bug Fixes
+
+* docker entrypoint ([#10](https://github.com/verizonconnect/42crunch-exporter/issues/10)) ([0d99bd9](https://github.com/verizonconnect/42crunch-exporter/commit/0d99bd990aee0b753bfbeba73af1ae09f945350a))
+
 ## [1.2.1](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.0...v1.2.1) (2023-07-06)
 
 
