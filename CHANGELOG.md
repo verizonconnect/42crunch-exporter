@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.2...v1.2.3) (2023-07-12)
+
+
+### Miscellaneous
+
+* bump deps ([#12](https://github.com/verizonconnect/42crunch-exporter/issues/12)) ([bb789ce](https://github.com/verizonconnect/42crunch-exporter/commit/bb789cea0601e58e3e1eee29f44977ddef6cf9cc))
+
 ## [1.2.2](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.1...v1.2.2) (2023-07-10)
 
 
