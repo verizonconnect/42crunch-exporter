@@ -87,7 +87,7 @@ func main() {
 		select {
 		case <-term:
 			logger.Info("Received SIGTERM, shutting down HTTP server gracefully...")
-			if err := srv.Shutdown(context.TODO()); err != nil {
+			if err := srv.Shutdown(context.Background()); err != nil {
 				logger.Error("Error during server shutdown", "err", err)
 				os.Exit(1)
 			}
