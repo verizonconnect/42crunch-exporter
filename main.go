@@ -2,18 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/alecthomas/kingpin/v2"
-	"github.com/go-kit/log/level"
 	"github.com/verizonconnect/42crunch-exporter/internal/exporter"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/promlog"
-	"github.com/prometheus/common/promlog/flag"
 	"github.com/prometheus/common/version"
 	"github.com/prometheus/exporter-toolkit/web"
 	webflag "github.com/prometheus/exporter-toolkit/web/kingpinflag"
@@ -27,35 +25,26 @@ const (
 )
 
 func main() {
-	prometheus.MustRegister(version.NewCollector(exporter.Namespace + "_exporter"))
-
+	prometheus.MustRegister(prometheus.NewGoCollector())
 	var (
-		format              = promlog.AllowedFormat{}
 		webConfig           = webflag.AddFlags(kingpin.CommandLine, ":9916")
 		metricsPath         = kingpin.Flag("web.metrics-path", "Path under which to expose metrics").Default("/metrics").String()
 		crunchAddress       = kingpin.Flag("42c-address", fmt.Sprintf("42Crunch server address (can also be set with $%s)", envAddress)).Default("https://platform.42crunch.com").Envar(envAddress).String()
 		crunchAPIKey        = kingpin.Flag("42c-api-key", fmt.Sprintf("42Crunch API key (can also be set with $%s)", envAPIKey)).Envar(envAPIKey).Required().String()
-		collectionInclRegex = kingpin.Flag("42c-collection-regex", fmt.Sprintf("Regex which will include only specific 42Crunhc API collections. (can also be set with $%s)", env42cCollectionRegex)).Envar(env42cCollectionRegex).String()
+		collectionInclRegex = kingpin.Flag("42c-collection-regex", fmt.Sprintf("Regex which will include only specific 42Crunch API collections. (can also be set with $%s)", env42cCollectionRegex)).Envar(env42cCollectionRegex).String()
 	)
 
-	_ = format.Set("json")
-	promlogConfig := promlog.Config{
-		Format: &format,
-	}
-
-	flag.AddFlags(kingpin.CommandLine, &promlogConfig)
 	kingpin.Version(version.Print(exporter.Namespace + "_exporter"))
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
 
-	logger := promlog.New(&promlogConfig)
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	_ = level.Info(logger).Log("msg", fmt.Sprintf("Starting %s_exporter %s", exporter.Namespace, version.Info()))
-	_ = level.Info(logger).Log("msg", fmt.Sprintf("Build context %s", version.BuildContext()))
-
+	logger.Info("Starting %s_exporter", "namespace", exporter.Namespace, "version", version.Info())
+	logger.Info("Build context", "context", version.BuildContext())
 	client, err := crunch.NewClient(*crunchAddress, crunch.WithAPIKey(*crunchAPIKey))
 	if err != nil {
-		_ = level.Error(logger).Log("msg", "Error creating client", "err", err)
+		logger.Error("Error creating client", "err", err)
 		os.Exit(1)
 	}
 
@@ -83,7 +72,7 @@ func main() {
 	go func() {
 		srv := &http.Server{}
 		if err := web.ListenAndServe(srv, webConfig, logger); err != http.ErrServerClosed {
-			_ = level.Error(logger).Log("msg", "Error starting HTTP server", "err", err)
+			logger.Error("Error starting HTTP server", "err", err)
 			close(srvc)
 		}
 	}()
@@ -91,7 +80,7 @@ func main() {
 	for {
 		select {
 		case <-term:
-			_ = level.Info(logger).Log("msg", "Received SIGTERM, exiting gracefully...")
+			logger.Info("Received SIGTERM, exiting gracefully...")
 			os.Exit(0)
 		case <-srvc:
 			os.Exit(1)
