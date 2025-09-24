@@ -40,7 +40,7 @@ func main() {
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	logger.Info("Starting %s_exporter", "namespace", exporter.Namespace, "version", version.Info())
+	logger.Info("Starting exporter", "namespace", exporter.Namespace, "version", version.Info())
 	logger.Info("Build context", "context", version.BuildContext())
 	client, err := crunch.NewClient(*crunchAddress, crunch.WithAPIKey(*crunchAPIKey))
 	if err != nil {
@@ -51,10 +51,15 @@ func main() {
 	e := exporter.Exporter{
 		Client: client,
 		Logger: logger,
-		Config: exporter.ExporterConfig{CollectionInclRegex: collectionInclRegex},
+		Config: exporter.ExporterConfig{CollectionInclRegex: *collectionInclRegex},
 	}
 
-	http.HandleFunc(*metricsPath, e.HandlerFunc())
+	if metricsPath != nil {
+		http.HandleFunc(*metricsPath, e.HandlerFunc())
+	} else {
+		logger.Error("metricsPath is nil, cannot register metrics handler")
+		os.Exit(1)
+	}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`<html>
 						 <head><title>42Crunch Exporter</title></head>
@@ -69,8 +74,8 @@ func main() {
 	term := make(chan os.Signal, 1)
 	signal.Notify(term, os.Interrupt, syscall.SIGTERM)
 
+	srv := &http.Server{}
 	go func() {
-		srv := &http.Server{}
 		if err := web.ListenAndServe(srv, webConfig, logger); err != http.ErrServerClosed {
 			logger.Error("Error starting HTTP server", "err", err)
 			close(srvc)
@@ -80,7 +85,11 @@ func main() {
 	for {
 		select {
 		case <-term:
-			logger.Info("Received SIGTERM, exiting gracefully...")
+			logger.Info("Received SIGTERM, shutting down HTTP server gracefully...")
+			if err := srv.Shutdown(nil); err != nil {
+				logger.Error("Error during server shutdown", "err", err)
+				os.Exit(1)
+			}
 			os.Exit(0)
 		case <-srvc:
 			os.Exit(1)

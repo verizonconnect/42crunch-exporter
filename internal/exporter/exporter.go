@@ -25,7 +25,7 @@ type Exporter struct {
 }
 
 type ExporterConfig struct {
-	CollectionInclRegex *string
+	CollectionInclRegex string
 }
 
 func (e *Exporter) HandlerFunc() http.HandlerFunc {
@@ -76,7 +76,7 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 	}
 
 	for _, c := range collections.Items {
-		obj, err := regexp.Match(*e.Config.CollectionInclRegex, []byte(c.Description.Name))
+		obj, err := regexp.Match(e.Config.CollectionInclRegex, []byte(c.Description.Name))
 		if err != nil {
 			e.Logger.Error("regex failed", "err", err)
 		}
@@ -209,7 +209,7 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 	)
 
 	for _, c := range collections.Items {
-		obj, _ := regexp.Match(*e.Config.CollectionInclRegex, []byte(c.Description.Name))
+		obj, _ := regexp.Match(e.Config.CollectionInclRegex, []byte(c.Description.Name))
 		if !obj {
 			continue
 		}
