@@ -55,10 +55,10 @@ func main() {
 		Config: exporter.ExporterConfig{CollectionInclRegex: *collectionInclRegex},
 	}
 
-	if metricsPath != nil {
+	if *metricsPath != "" {
 		http.HandleFunc(*metricsPath, e.HandlerFunc())
 	} else {
-		logger.Error("metricsPath is nil, cannot register metrics handler")
+		logger.Error("metricsPath is empty, cannot register metrics handler")
 		os.Exit(1)
 	}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
