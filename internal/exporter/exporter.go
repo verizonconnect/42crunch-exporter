@@ -87,7 +87,7 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 				"name": c.Description.Name,
 			}).Set(float64(c.Summary.ApiCount))
 		} else {
-			e.Logger.Debug("regex did not match for %s", c.Description.Name)
+			e.Logger.Debug("regex did not match for collection", "name", c.Description.Name)
 		}
 	}
 
