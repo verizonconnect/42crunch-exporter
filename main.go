@@ -55,12 +55,7 @@ func main() {
 		Config: exporter.ExporterConfig{CollectionInclRegex: *collectionInclRegex},
 	}
 
-	if *metricsPath != "" {
-		http.HandleFunc(*metricsPath, e.HandlerFunc())
-	} else {
-		logger.Error("metricsPath is empty, cannot register metrics handler")
-		os.Exit(1)
-	}
+	http.HandleFunc(*metricsPath, e.HandlerFunc())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`<html>
 						 <head><title>42Crunch Exporter</title></head>
