@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.5](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.4...v1.2.5) (2025-09-25)
+
+
+### Bug Fixes
+
+* correct import path for yaml package in go.mod ([342db3d](https://github.com/verizonconnect/42crunch-exporter/commit/342db3d6bf7d6f12cceaa1fd46b08f201210cadd))
+
+
+### Miscellaneous
+
+* change CollectionInclRegex from pointer to string and improve logging messages ([00d9e02](https://github.com/verizonconnect/42crunch-exporter/commit/00d9e024ab8279192ef2b72b119e2c305aa29b5e))
+* fix spelling mistake ([2326688](https://github.com/verizonconnect/42crunch-exporter/commit/232668838de4f30e2e249057b31023f674e87b33))
+* improve logging for regex matching and ensure context is used during server shutdown ([bb326f1](https://github.com/verizonconnect/42crunch-exporter/commit/bb326f120f7500a18af6d5bd288ae1bb801dd88b))
+* package import ([5f69411](https://github.com/verizonconnect/42crunch-exporter/commit/5f6941111a56b95cf67eaf371bb20bd7b48046c0))
+* remove redundant null check ([f7b9f2d](https://github.com/verizonconnect/42crunch-exporter/commit/f7b9f2d0ad0e9a396a976cdd0662df89010466d0))
+* remove unnecessary check ([1909e8a](https://github.com/verizonconnect/42crunch-exporter/commit/1909e8aea2f83e5190320d22eaf566b65da5f517))
+* update logging to use slog package and improve error handling ([cbe78d0](https://github.com/verizonconnect/42crunch-exporter/commit/cbe78d01ac565dfb83359d333091fb38dd17ae00))
+* use context.Background for server shutdown instead of context.TODO ([80d3b11](https://github.com/verizonconnect/42crunch-exporter/commit/80d3b113daf82f61ae7362803a49a968498e2d35))
+
 ## [1.2.3](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.2...v1.2.3) (2023-07-12)
 
 
