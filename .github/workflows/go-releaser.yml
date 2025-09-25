@@ -57,7 +57,7 @@ jobs:
         echo "::set-output name=version::$version"
 
     - name: Upload goreleaser built binaries to artifact 42crunch-exporter.${{ steps.calculate-version.outputs.version }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: 42crunch-exporter.${{ steps.calculate-version.outputs.version }}
         path: |
