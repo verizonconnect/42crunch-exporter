@@ -12,7 +12,7 @@ COPY internal ./internal
 
 RUN CGO_ENABLED=0 go build -o /bld/out/42crunch-exporter
 
-FROM alpine:3.18
+FROM alpine:3.22
 
 COPY --from=build /bld/out/42crunch-exporter /opt/42crunch-exporter
 

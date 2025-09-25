@@ -3,12 +3,11 @@ package exporter
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"time"
 
-	"github.com/go-kit/log"
-	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	crunch "github.com/verizonconnect/42crunch-client-go"
@@ -21,12 +20,12 @@ const (
 
 type Exporter struct {
 	Client *crunch.Client
-	Logger log.Logger
+	Logger *slog.Logger
 	Config ExporterConfig
 }
 
 type ExporterConfig struct {
-	CollectionInclRegex *string
+	CollectionInclRegex string
 }
 
 func (e *Exporter) HandlerFunc() http.HandlerFunc {
@@ -34,13 +33,13 @@ func (e *Exporter) HandlerFunc() http.HandlerFunc {
 		registry := prometheus.NewRegistry()
 
 		if err := e.collectApiCollectionMetrics(r.Context(), registry); err != nil {
-			_ = level.Error(e.Logger).Log("err", err)
+			e.Logger.Error("error collecting API collection metrics", "err", err)
 			http.Error(w, fmt.Sprintf("error: %s", err), http.StatusInternalServerError)
 			return
 		}
 
 		if err := e.collectApiAuditMetrics(r.Context(), registry); err != nil {
-			_ = level.Error(e.Logger).Log("err", err)
+			e.Logger.Error("error collecting API audit metrics", "err", err)
 			http.Error(w, fmt.Sprintf("error: %s", err), http.StatusInternalServerError)
 			return
 		}
@@ -65,21 +64,21 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 		)
 	)
 
-	_ = level.Info(e.Logger).Log("msg", "collecting collection metrics...")
+	e.Logger.Info("collecting collection metrics...")
 	registry.MustRegister(
 		collectionInformation,
 	)
 
 	collections, err := e.Client.Collections.GetAll(ctx)
 	if err != nil {
-		_ = level.Error(e.Logger).Log("msg", "api collection metrics collection failed...", "err", err)
+		e.Logger.Error("api collection metrics collection failed...", "err", err)
 		return err
 	}
 
 	for _, c := range collections.Items {
-		obj, err := regexp.Match(*e.Config.CollectionInclRegex, []byte(c.Description.Name))
+		obj, err := regexp.Match(e.Config.CollectionInclRegex, []byte(c.Description.Name))
 		if err != nil {
-			_ = level.Error(e.Logger).Log("msg", "regex failed", "err", err)
+			e.Logger.Error("regex failed", "err", err)
 		}
 
 		if obj {
@@ -88,7 +87,7 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 				"name": c.Description.Name,
 			}).Set(float64(c.Summary.ApiCount))
 		} else {
-			_ = level.Debug(e.Logger).Log("msg", fmt.Sprintf("regex did not match for %s", c.Description.Name), "err", err)
+			e.Logger.Debug("regex did not match for collection", "name", c.Description.Name)
 		}
 	}
 
@@ -98,7 +97,7 @@ func (e *Exporter) collectApiCollectionMetrics(ctx context.Context, registry *pr
 func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometheus.Registry) error {
 	collections, err := e.Client.Collections.GetAll(ctx)
 	if err != nil {
-		_ = level.Error(e.Logger).Log("msg", "api collections could not be retrieved", "err", err)
+		e.Logger.Error("api collections could not be retrieved", "err", err)
 		return err
 	}
 
@@ -210,14 +209,14 @@ func (e *Exporter) collectApiAuditMetrics(ctx context.Context, registry *prometh
 	)
 
 	for _, c := range collections.Items {
-		obj, _ := regexp.Match(*e.Config.CollectionInclRegex, []byte(c.Description.Name))
+		obj, _ := regexp.Match(e.Config.CollectionInclRegex, []byte(c.Description.Name))
 		if !obj {
 			continue
 		}
 
 		apiResult, err := e.Client.API.ListApis(ctx, c.Description.Id)
 		if err != nil {
-			_ = level.Error(e.Logger).Log("msg", "collection apis could not be retrieved", "err", err)
+			e.Logger.Error("collection apis could not be retrieved", "err", err)
 			return err
 		}
 
@@ -289,7 +288,7 @@ func (e *Exporter) getApiAssessmentReport(ctx context.Context, apiId string) cha
 	go func() {
 		report, err := e.Client.API.ReadAssessmentReport(ctx, apiId)
 		if err != nil {
-			_ = level.Error(e.Logger).Log("msg", "unable to read assessment report", "err", err)
+			e.Logger.Error("unable to read assessment report", "err", err)
 		}
 
 		r <- report.OpenapiState
