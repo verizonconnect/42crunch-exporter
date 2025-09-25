@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.6](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.5...v1.2.6) (2025-09-25)
+
+
+### Miscellaneous
+
+* add GitHub Actions to Dependabot configuration ([d671e1e](https://github.com/verizonconnect/42crunch-exporter/commit/d671e1ee2ef412bc7decfcc713b35c4899220329))
+* **dependabot:** update GitHub Actions directory path in configuration ([fda2d0f](https://github.com/verizonconnect/42crunch-exporter/commit/fda2d0f826607d689a5d760546415970662920b9))
+
 ## [1.2.5](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.4...v1.2.5) (2025-09-25)
 
 
