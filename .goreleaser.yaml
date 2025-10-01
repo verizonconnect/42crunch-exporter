@@ -1,55 +1,38 @@
-project:
-  builds:
-    - id: "42crunch-exporter"
-      env:
-        - CGO_ENABLED=0
-      goos:
-        - linux
-        - windows
-      goarch:
-        - amd64
-        - arm64
-      ldflags:
-        - -s -w -X main.build={{ .Version }}
-      binary: "{{ .ProjectName }}"
-      skip: false
+version: 2
 
-  images:
-    - name: vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
-      dockerfile: Dockerfile.goreleaser
-      platforms:
-        - linux/amd64
-      buildx: true
-      build_args:
-        - --pull
-      labels:
-        org.opencontainers.image.version: "{{ .Version }}"
-        org.opencontainers.image.created: "{{ time \"2006-01-02T15:04:05Z07:00\" }}"
-        org.opencontainers.image.revision: "{{ .FullCommit }}"
-        org.opencontainers.image.licenses: MIT
+project_name: 42crunch-exporter
 
-    - name: vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8
-      dockerfile: Dockerfile.goreleaser
-      platforms:
-        - linux/arm64/v8
-      buildx: true
-      build_args:
-        - --pull
-      labels:
-        org.opencontainers.image.version: "{{ .Version }}"
-        org.opencontainers.image.created: "{{ time \"2006-01-02T15:04:05Z07:00\" }}"
-        org.opencontainers.image.revision: "{{ .FullCommit }}"
-        org.opencontainers.image.licenses: MIT
+builds:
+  - id: "42crunch-exporter"
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.build={{ .Version }}
+    binary: "{{ .ProjectName }}"
+    skip: false
 
-  manifests:
-    - name: vzconnect/{{ .ProjectName }}:{{ .Version }}
-      images:
-        - vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
-        - vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8
-    - name: vzconnect/{{ .ProjectName }}:latest
-      images:
-        - vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
-        - vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8
+dockers_v2:
+  - images:
+      - vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
+    dockerfile: Dockerfile.goreleaser
+    platforms:
+      - linux/amd64
+    flags:
+      - "--pull"
+    tags:
+      - "{{ .Version }}-amd64"
+      - "{{ .Version }}-arm64"
+    labels:
+      org.opencontainers.image.version: "{{ .Version }}"
+      org.opencontainers.image.created: "{{ .Date }}"
+      org.opencontainers.image.revision: "{{ .FullCommit }}"
+      org.opencontainers.image.licenses: MIT
 
 changelog:
   use: github
