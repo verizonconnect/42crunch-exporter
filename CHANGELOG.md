@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.7](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.6...v1.2.7) (2025-10-01)
+
+
+### Bug Fixes
+
+* goreleaser config ([bc3675f](https://github.com/verizonconnect/42crunch-exporter/commit/bc3675f620970d3840fef89e5fd6164df6b6fd31))
+
 ## [1.2.6](https://github.com/verizonconnect/42crunch-exporter/compare/v1.2.5...v1.2.6) (2025-09-25)
 
 
