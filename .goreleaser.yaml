@@ -1,69 +1,75 @@
-builds:
-  - env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - windows
-    goarch:
-      - amd64
-      - arm64
-    id: "42crunch-exporter"
-    ldflags:
-      - -s -w -X main.build={{.Version}}
-    binary: "{{ .ProjectName }}"
-    skip: false
-dockers:
-  - image_templates:
-      - "vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64"
-    dockerfile: Dockerfile.goreleaser
-    use: buildx
-    build_flag_templates:
-      - --pull
-      - --platform=linux/amd64
-      - --label=org.opencontainers.image.version={{ .Version }}
-      - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
-      - --label=org.opencontainers.image.revision={{ .FullCommit }}
-      - --label=org.opencontainers.image.licenses=MIT
-  - image_templates:
-      - "vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8"
-    dockerfile: Dockerfile.goreleaser
-    use: buildx
-    build_flag_templates:
-      - --pull
-      - --platform=linux/arm64/v8
-      - --label=org.opencontainers.image.version={{ .Version }}
-      - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
-      - --label=org.opencontainers.image.revision={{ .FullCommit }}
-      - --label=org.opencontainers.image.licenses=MIT
-    goarch: arm64
-docker_manifests:
-- name_template: vzconnect/{{ .ProjectName }}:{{ .Version }}
-  image_templates:
-  - vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
-  - vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8
-- name_template: vzconnect/{{ .ProjectName }}:latest
-  image_templates:
-  - vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
-  - vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8
+project:
+  builds:
+    - id: "42crunch-exporter"
+      env:
+        - CGO_ENABLED=0
+      goos:
+        - linux
+        - windows
+      goarch:
+        - amd64
+        - arm64
+      ldflags:
+        - -s -w -X main.build={{ .Version }}
+      binary: "{{ .ProjectName }}"
+      skip: false
+
+  images:
+    - name: vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
+      dockerfile: Dockerfile.goreleaser
+      platforms:
+        - linux/amd64
+      buildx: true
+      build_args:
+        - --pull
+      labels:
+        org.opencontainers.image.version: "{{ .Version }}"
+        org.opencontainers.image.created: "{{ time \"2006-01-02T15:04:05Z07:00\" }}"
+        org.opencontainers.image.revision: "{{ .FullCommit }}"
+        org.opencontainers.image.licenses: MIT
+
+    - name: vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8
+      dockerfile: Dockerfile.goreleaser
+      platforms:
+        - linux/arm64/v8
+      buildx: true
+      build_args:
+        - --pull
+      labels:
+        org.opencontainers.image.version: "{{ .Version }}"
+        org.opencontainers.image.created: "{{ time \"2006-01-02T15:04:05Z07:00\" }}"
+        org.opencontainers.image.revision: "{{ .FullCommit }}"
+        org.opencontainers.image.licenses: MIT
+
+  manifests:
+    - name: vzconnect/{{ .ProjectName }}:{{ .Version }}
+      images:
+        - vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
+        - vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8
+    - name: vzconnect/{{ .ProjectName }}:latest
+      images:
+        - vzconnect/{{ .ProjectName }}:{{ .Version }}-amd64
+        - vzconnect/{{ .ProjectName }}:{{ .Version }}-arm64v8
+
 changelog:
   use: github
   sort: asc
   groups:
-  - title: Features
-    regexp: "^.*feat[(\\w)]*:+.*$"
-    order: 0
-  - title: Fixes
-    regexp: "^.*fix[(\\w)]*:+.*$"
-    order: 1
-  - title: Building and Packaging
-    regexp: "^.*build[(\\w)]*:+.*$"
-    order: 2
-  - title: Documentation
-    regexp: "^.*docs[(\\w)]*:+.*$"
-    order: 3
-  - title: Others
-    order: 999
+    - title: Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: Fixes
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: Building and Packaging
+      regexp: "^.*build[(\\w)]*:+.*$"
+      order: 2
+    - title: Documentation
+      regexp: "^.*docs[(\\w)]*:+.*$"
+      order: 3
+    - title: Others
+      order: 999
   filters:
     exclude:
-    - '^test:'
-    - '^Merge '
+      - '^test:'
+      - '^Merge '
